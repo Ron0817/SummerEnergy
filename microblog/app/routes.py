@@ -42,6 +42,8 @@ from flask import request
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        return 'do the login'
+        fname = request.form['fname']
+        lname = request.form['lname']
+        return 'User Catched: %s %s did the login' % (fname, lname)
     else:
         return render_template('login.html', title='Login', login_url=url_for('login'))
