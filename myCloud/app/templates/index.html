@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Welcome, {{ user.username }}!</h1>
+    {% for post in posts %}
+    <div><p>{{ post.author.username }} says: <b>{{ post.body }}</b></p></div>
+    {% endfor %}
+    <br>
+    
+    <body>
+        <p>Upload here:</b></p>
+        <form method="post">
+            <label>key:</label>
+            <input type="text" name="key" />
+            <input type="submit" value="get" />
+        </form>
+
+        <form  method="post">
+            <label>key:</label>
+            <input type="text" name="key" />
+            <label>value:</label>
+            <input type="text" name="value" />
+            <input type="submit" value="put" />
+        </form>
+        <br>
+
+        <p>Login here:</b></p>
+        <form action= {{ login_url }} method="post">
+            <label for="fname">First name:</label><br>
+            <input type="text" id="fname" name="fname" value=""><br>
+            <label for="lname">Last name:</label><br>
+            <input type="text" id="lname" name="lname" value=""><br><br>
+            <input type="submit" value="Submit">
+        </form> 
+
+    </body>  
+
+  {% endblock %}

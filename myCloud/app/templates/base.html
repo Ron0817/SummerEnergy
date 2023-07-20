@@ -1,0 +1,18 @@
+<!doctype html>
+<html>
+    <head>
+      {% if title %}
+      <title>{{ title }} - MyCloud</title>
+      {% else %}
+      <title>Welcome to My Cloud</title>
+      {% endif %}
+    </head>
+    <body>
+        <div>
+          MyCloud: <a href="/index">Home</a>
+          <a style="float:right" href="/index">Log in</a>
+        </div>
+        <hr>
+        {% block content %}{% endblock %}
+    </body>
+</html>
