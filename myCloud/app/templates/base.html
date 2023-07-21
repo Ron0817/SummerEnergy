@@ -6,11 +6,19 @@
       {% else %}
       <title>Welcome to My Cloud</title>
       {% endif %}
+      <style>
+        .header_right_a{
+          margin-right: 10px;
+          float:right;
+        }
+      </style>
     </head>
     <body>
         <div>
           MyCloud: <a href="/index">Home</a>
-          <a style="float:right" href="/index">Log in</a>
+          <a class="header_right_a" href="/login">Log in</a>
+          <a class="header_right_a" href="/signup">Sign up</a>
+
         </div>
         <hr>
         {% block content %}{% endblock %}

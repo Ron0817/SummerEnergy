@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<head>
+    <title>ECE1779 Flask Examples</title>
+</head>
+<html>
+    <body>
+        <ul>
+            <li><a href="{{ url_for('hello')}}">Hello World</a></li>
+            <li><a href="{{ url_for('add')}}?n1=10&n2=45">Add numbers</a></li>
+            <li><a href="{{ url_for('add_form')}}">Add numbers (form)</a></li>
+            <li><a href="{{ url_for('add_form_template')}}">Add numbers (form+template)</a></li>
+            <li><a href="{{ url_for('count')}}">Count</a></li>
+        </ul>
+    </body>
+</html>
