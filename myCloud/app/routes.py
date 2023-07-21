@@ -1,4 +1,4 @@
-from flask import render_template, url_for, request, redirect
+from flask import render_template, url_for, request, redirect, flash
 from markupsafe import escape
 from app import app
 from app.user import User, total_users
@@ -46,10 +46,11 @@ def login():
                     print('Now Current User on the Login Page is %s %s' % (current_user.fname, current_user.lname))
                 return redirect(url_for('index'))
             else:
-                # Flash message
+                flash('Wrong user email or password. Try again.')
                 return render_template('login.html', title='Login')
         # Sign up
         else:
+            flash('Sign up first.')
             return render_template('signup.html', title='Sign up')
         
     # Show the login form
@@ -69,15 +70,16 @@ def signup():
         
         # Already signed up
         if email in total_users:
-            # Flash message
-            return render_template('signup.html', title='Sign up')
+            flash('Email already signed up. Try log in.')
+            return redirect(url_for('login'))
         # Sign up
         else:
             new_user = User(fname, lname, password, number, email)
             total_users.update({email: new_user})
             if app.debug == True:
                 print('User signed up successfully - email: %s password: %s' % (email, password))
-            return redirect(url_for('login'))
+            flash('Email signed up successfully. Now log in.')
+            return render_template('signup.html', title='signup')
         
     # Show the Signup form
     else:
