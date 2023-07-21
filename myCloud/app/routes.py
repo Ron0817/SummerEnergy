@@ -1,11 +1,11 @@
-from flask import render_template, url_for, request, redirect, flash
+from flask import render_template, url_for, request, redirect, flash, session
 from markupsafe import escape
 from app import app
 from app.user import User, total_users
 
 # Default user
-current_user = User(fname='Please log in', email="default@gmail.com", password='default')
-total_users.update({current_user.email: current_user})
+# current_user = User(fname='Please log in', email="default@gmail.com", password='default')
+# total_users.update({current_user.email: current_user})
 
 # Default posts
 posts = [
@@ -23,9 +23,13 @@ posts = [
 @app.route('/')
 @app.route('/index')
 def index():    
-    if app.debug == True:
-        print('Now Current User on the Index Page is %s %s' % (current_user.fname, current_user.lname))
-    return render_template('index.html', title='Home', user=current_user, posts=posts)
+    if 'email' in session:
+        current_user = total_users[session['email']]
+        if app.debug == True:
+            print('TOTAL USER LIST: {}'.format(total_users))
+        return render_template('index.html', title='Home', user=current_user, posts=posts)
+    else:
+        return render_template('index.html', title='Home', user=User('Please log in'), posts=posts)
 
 # Login page
 @app.route('/login', methods=['GET', 'POST'])
@@ -39,11 +43,10 @@ def login():
         
         # Log in
         if email in total_users:
-            global current_user
             current_user = total_users.get(email)
             if current_user.login(email, password):
-                if app.debug == True:
-                    print('Now Current User on the Login Page is %s %s' % (current_user.fname, current_user.lname))
+                session['email'] = email
+                session.permanent = False
                 return redirect(url_for('index'))
             else:
                 flash('Wrong user email or password. Try again.')
@@ -85,4 +88,12 @@ def signup():
     else:
         return render_template('signup.html', title='signup')
 
-    
+# Log out page
+@app.route('/logout', methods=['GET', 'POST'])
+def logout():
+    if 'email' in session:
+        total_users.pop(session['email'])
+        session.pop('email')
+    else:
+        flash("You are logged out")
+    return redirect(url_for('index'))
