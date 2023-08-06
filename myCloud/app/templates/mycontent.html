@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block content %}    
+    <body>
+        <p>Upload here:</b></p>
+        <form method="post" enctype=multipart/form-data >
+            <label>key:</label>
+            <input type="text" name="upload" />
+            <input type="file" name="image" />
+            <input type="submit" value="upload" />
+        </form>
+
+        <p>Retrieve here:</b></p>
+        <form  method="post">
+            <label>key:</label>
+            <input type="text" name="key" />
+            <label>value:</label>
+            <input type="text" name="value" />
+            <input type="submit" value="put" />
+        </form>
+        <br>
+
+        {% for mesg in get_flashed_messages() %}
+            <li>{{ mesg }}</li>
+        {% endfor %}
+
+    </body>  
+
+  {% endblock %}

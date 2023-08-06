@@ -1,7 +1,41 @@
+import os
 from flask import render_template, url_for, request, redirect, flash, session
 from markupsafe import escape
 from app import app
 from app.user import User, total_users
+from werkzeug.utils import secure_filename
+
+import mysql.connector
+
+# Some constant variables
+UPLOAD_FOLDER = './app/static/uploads'
+ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+# Mysql config
+mysql_config = {
+  'user': 'ece1779',
+  'password': '12345678',
+  'host': '127.0.0.1',
+  'database': 'estore',
+  'raise_on_warnings': True
+}
+
+# Display an HTML list of all product.
+@app.route('/trivial',methods=['GET'])
+def trivial():
+    cnx = mysql.connector.connect(**mysql_config)
+
+    cursor = cnx.cursor()
+    query = "SELECT * FROM customer "
+    cursor.execute(query)
+    print('CUSTMORS:')
+    for row in cursor:
+        print(row)
+    # view = render_template("trivial.html",title="Customer Table", cursor=cursor)
+    cnx.close()
+    return 'some json data'
+#     return view 
 
 # Default user
 # current_user = User(fname='Please log in', email="default@gmail.com", password='default')
@@ -23,6 +57,9 @@ posts = [
 @app.route('/')
 @app.route('/index')
 def index():    
+    if app.debug == True:
+        total_users.update({'test@test.com': User('Test', 'User', 'test', '123', 'test@test.com')})
+
     if 'email' in session:
         current_user = total_users[session['email']]
         if app.debug == True:
@@ -53,7 +90,7 @@ def login():
                 return render_template('login.html', title='Login')
         # Sign up
         else:
-            flash('Sign up first.')
+            flash('Please sign up first.')
             return render_template('signup.html', title='Sign up')
         
     # Show the login form
@@ -92,8 +129,54 @@ def signup():
 @app.route('/logout', methods=['GET', 'POST'])
 def logout():
     if 'email' in session:
-        total_users.pop(session['email'])
         session.pop('email')
     else:
         flash("You are logged out")
     return redirect(url_for('index'))
+
+# myContent page
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+@app.route('/mycontent', methods=['GET', 'POST'])
+def mycontent():
+    # Check if login
+    if 'email' in session:
+        # Upload
+        if request.method == 'POST':
+            # Check if key in form
+            if request.form['upload'] == '':
+                flash('Please input a key')
+                return redirect(request.url)
+            key = request.form['upload']
+            if app.debug == True:
+                    print('User input upload key %s' % key)
+
+            # Check if file is valid
+            if 'image' not in request.files:
+                flash('Please select a file')
+                return redirect(request.url)
+            file = request.files['image']
+            if file.filename == '':
+                flash('No selected file')
+            if file and allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                filename = key + '.' + filename
+                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                flash('File upload succeeded')
+
+            ################## Update RD
+        return render_template('mycontent.html')
+    else:
+        flash("Please login first")
+        return redirect(url_for('login'))
+
+
+@app.route('/upload', methods=['GET', 'POST'])
+def upload():
+    if 'file' not in request.files:
+            flash('No file part')
+            return redirect(request.url)
+    file = request.files['file']
+    return 'reached here'
