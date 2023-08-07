@@ -207,7 +207,7 @@ def retrieve():
         if app.debug == True:
                 print('User input retrieve key %s' % key)
                 print('User File Path: ' + file_path)
-        return render_template('display.html', file_path=file_path)
+        return render_template('display.html', file_path=file_path, key=key)
         # ################# Update RD
     else:
         flash("Please login first")
