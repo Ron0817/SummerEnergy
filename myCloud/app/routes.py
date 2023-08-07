@@ -58,18 +58,19 @@ posts = [
 @app.route('/index')
 def index():    
     if app.debug == True:
-        total_users.update({'test@test.com': User('Test', 'User', 'test', '123', 'test@test.com')})
-        try:
-            os.mkdir(os.path.join(app.config['USERS_FOLDER'], str(total_users['test@test.com'].id)))
-        except OSError as error:
-            print(error)
+        if 'test@test.com' not in total_users:
+            total_users.update({'test@test.com': User('Test', 'User', 'test', '123', 'test@test.com')})
+            try:
+                os.mkdir(os.path.join(app.config['USERS_FOLDER'], str(total_users['test@test.com'].id)))
+            except OSError as error:
+                print(error)
     if 'email' in session:
         current_user = total_users[session['email']]
         if app.debug == True:
             print('TOTAL USER LIST: {}'.format(total_users))
         return render_template('index.html', title='Home', user=current_user, posts=posts)
     else:
-        return render_template('index.html', title='Home', user=User('Please log in'), posts=posts)
+        return render_template('index.html', title='Home', posts=posts)
 
 # Login page
 @app.route('/login', methods=['GET', 'POST'])

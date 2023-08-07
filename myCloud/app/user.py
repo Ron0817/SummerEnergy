@@ -1,13 +1,15 @@
+import itertools
+
 global total_users
 total_users = {}
 
 class User:
-    id = 0
+    auto_id = itertools.count()
     def __init__(self, fname='First name', lname='Last name', password='password', 
                  number='number', email='email'):
         self.fname = fname
         self.lname = lname
-        self.id += 1
+        self.id = next(self.auto_id)
         self.number = number
         self.email = email
         self.password = password
