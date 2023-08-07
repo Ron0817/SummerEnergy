@@ -3,7 +3,7 @@
 {% block content %}    
     <body>
         <p>Upload here:</b></p>
-        <form method="post" enctype=multipart/form-data >
+        <form method="post" action="/upload" enctype=multipart/form-data >
             <label>key:</label>
             <input type="text" name="upload" />
             <input type="file" name="image" />
@@ -13,10 +13,8 @@
         <p>Retrieve here:</b></p>
         <form  method="post">
             <label>key:</label>
-            <input type="text" name="key" />
-            <label>value:</label>
-            <input type="text" name="value" />
-            <input type="submit" value="put" />
+            <input type="text" name="retrieve" />
+            <input type="submit" value="get" />
         </form>
         <br>
 

@@ -8,9 +8,9 @@ from werkzeug.utils import secure_filename
 import mysql.connector
 
 # Some constant variables
-UPLOAD_FOLDER = './app/static/uploads'
+USERS_FOLDER = './app/static/users'
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['USERS_FOLDER'] = USERS_FOLDER
 
 # Mysql config
 mysql_config = {
@@ -59,7 +59,10 @@ posts = [
 def index():    
     if app.debug == True:
         total_users.update({'test@test.com': User('Test', 'User', 'test', '123', 'test@test.com')})
-
+        try:
+            os.mkdir(os.path.join(app.config['USERS_FOLDER'], str(total_users['test@test.com'].id)))
+        except OSError as error:
+            print(error)
     if 'email' in session:
         current_user = total_users[session['email']]
         if app.debug == True:
@@ -100,7 +103,6 @@ def login():
 # Sign up page
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
-    # Do the login
     if request.method == 'POST':
         email = request.form['email'] 
         password = request.form['password']
@@ -116,6 +118,10 @@ def signup():
         else:
             new_user = User(fname, lname, password, number, email)
             total_users.update({email: new_user})
+            try:
+                os.mkdir(os.path.join(app.config['USERS_FOLDER'], str(new_user.id)))
+            except OSError as error:
+                print(error) 
             if app.debug == True:
                 print('User signed up successfully - email: %s password: %s' % (email, password))
             flash('Email signed up successfully. Now log in.')
@@ -142,6 +148,15 @@ def allowed_file(filename):
 @app.route('/mycontent', methods=['GET', 'POST'])
 def mycontent():
     # Check if login
+    if 'email' in session:            
+        return render_template('mycontent.html')
+    else:
+        flash("Please login first")
+        return redirect(url_for('login'))
+
+@app.route('/upload', methods=['GET', 'POST'])
+def upload():
+    # Check if login
     if 'email' in session:
         # Upload
         if request.method == 'POST':
@@ -163,20 +178,19 @@ def mycontent():
             if file and allowed_file(file.filename):
                 filename = secure_filename(file.filename)
                 filename = key + '.' + filename
-                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                file.save(os.path.join(app.config['USERS_FOLDER'], str(total_users[session['email']].id) ,filename))
                 flash('File upload succeeded')
+            print("user id is: " + str(total_users[session['email']].id))
+            print("user email is: " + session['email'])
+        return redirect(url_for('mycontent'))     
+    
+            # Retrieve
+            # retrieve =  request.form['retrieve']
+            # if app.debug == True:
+            #         print('User input retrieve key %s' % retrieve)
 
-            ################## Update RD
-        return render_template('mycontent.html')
+            # ################# Update RD
     else:
         flash("Please login first")
         return redirect(url_for('login'))
 
-
-@app.route('/upload', methods=['GET', 'POST'])
-def upload():
-    if 'file' not in request.files:
-            flash('No file part')
-            return redirect(request.url)
-    file = request.files['file']
-    return 'reached here'
