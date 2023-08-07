@@ -9,8 +9,10 @@ import mysql.connector
 
 # Some constant variables
 USERS_FOLDER = './app/static/users'
+DISPLAY_FOLDER = './static/users'
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
 app.config['USERS_FOLDER'] = USERS_FOLDER
+app.config['DISPLAY_FOLDER'] = DISPLAY_FOLDER
 
 # Mysql config
 mysql_config = {
@@ -167,7 +169,9 @@ def upload():
                 return redirect(request.url)
             key = request.form['upload']
             if app.debug == True:
-                    print('User input upload key %s' % key)
+                print('User input upload key %s' % key)
+                print("user id is: " + str(total_users[session['email']].id))
+                print("user email is: " + session['email'])
 
             # Check if file is valid
             if 'image' not in request.files:
@@ -181,17 +185,30 @@ def upload():
                 filename = key + '.' + filename
                 file.save(os.path.join(app.config['USERS_FOLDER'], str(total_users[session['email']].id) ,filename))
                 flash('File upload succeeded')
-            print("user id is: " + str(total_users[session['email']].id))
-            print("user email is: " + session['email'])
+
         return redirect(url_for('mycontent'))     
     
-            # Retrieve
-            # retrieve =  request.form['retrieve']
-            # if app.debug == True:
-            #         print('User input retrieve key %s' % retrieve)
-
             # ################# Update RD
     else:
         flash("Please login first")
         return redirect(url_for('login'))
-
+    
+@app.route('/retrieve', methods=['GET', 'POST'])
+def retrieve():
+    # Check if login
+    if 'email' in session:
+        # Retrieve
+        key =  request.form['retrieve']
+        current_user = total_users[session['email']]
+        for root, dirs, files in os.walk(os.path.join(app.config['USERS_FOLDER'], str(current_user.id))):
+            for file in files:
+                if key == file.split('.')[0]:
+                    file_path = os.path.join(app.config['DISPLAY_FOLDER'], str(current_user.id), file)
+        if app.debug == True:
+                print('User input retrieve key %s' % key)
+                print('User File Path: ' + file_path)
+        return render_template('display.html', file_path=file_path)
+        # ################# Update RD
+    else:
+        flash("Please login first")
+        return redirect(url_for('login')) 
