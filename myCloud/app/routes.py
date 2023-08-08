@@ -220,9 +220,7 @@ def retrieve():
         # Try memcache
         if key in memcache:
             binary_flag = 1
-            file_binary = base64.b64encode(memcache[key])
-            file_binary = file_binary.decode('utf-8') # remove b''
-            return render_template('display.html', file_path=file_binary, key=key, binary_flag=binary_flag)
+            return render_template('display.html', file_path=memcache[key], key=key, binary_flag=binary_flag)
 
         # Else go to local storage
         for root, dirs, files in os.walk(os.path.join(app.config['USERS_FOLDER'], str(current_user.id))):
