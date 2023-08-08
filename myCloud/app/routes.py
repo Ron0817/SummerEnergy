@@ -9,12 +9,10 @@ import base64
 
 import mysql.connector
 
-# Some constant variables
+# Some constant configs
 USERS_FOLDER = './app/static/users'
 DISPLAY_FOLDER = './static/users'
 ALLOWED_EXTENSIONS = {'docx', 'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
-app.config['USERS_FOLDER'] = USERS_FOLDER
-app.config['DISPLAY_FOLDER'] = DISPLAY_FOLDER
 
 # Mysql config
 mysql_config = {
@@ -25,21 +23,9 @@ mysql_config = {
   'raise_on_warnings': True
 }
 
-# Display an HTML list of all product.
-@app.route('/trivial',methods=['GET'])
-def trivial():
-    cnx = mysql.connector.connect(**mysql_config)
-
-    cursor = cnx.cursor()
-    query = "SELECT * FROM customer "
-    cursor.execute(query)
-    print('CUSTMORS:')
-    for row in cursor:
-        print(row)
-    # view = render_template("trivial.html",title="Customer Table", cursor=cursor)
-    cnx.close()
-    return 'some json data'
-#     return view 
+app.config['MYSQL_CONFIG'] = mysql_config
+app.config['USERS_FOLDER'] = USERS_FOLDER
+app.config['DISPLAY_FOLDER'] = DISPLAY_FOLDER
 
 # Default user
 # current_user = User(fname='Please log in', email="default@gmail.com", password='default')
@@ -183,6 +169,7 @@ def mycontent():
 def upload():
     # Check if login
     if 'email' in session:
+        current_user = total_users[session['email']]
         # Upload
         if request.method == 'POST':
             # Check if key in form
@@ -190,6 +177,14 @@ def upload():
                 flash('Please input a key')
                 return redirect(request.url)
             key = request.form['upload']
+            # Check if key exists - change to rds later
+            for root, dirs, files in os.walk(os.path.join(app.config['USERS_FOLDER'], str(current_user.id))):
+                for file in files:
+                    if key == file.split('.')[0]:
+                        # User popup confirmation
+                        os.remove(os.path.join(root, file))
+                        flash("Key exist, file replaced")
+
             if app.debug == True:
                 print('User input upload key %s' % key)
                 print("user id is: " + str(total_users[session['email']].id))
@@ -240,6 +235,7 @@ def retrieve():
         flash("Please login first")
         return redirect(url_for('login')) 
 
+# MyCloud Configuration
 @app.route('/mycloud-config', methods=['GET', 'POST'])
 def mycloud_config():
     # Check if login
@@ -249,10 +245,31 @@ def mycloud_config():
         flash('Please login first')
         return redirect(url_for('login'))
 
+# Memcache Configuration
 @app.route('/memcache-config', methods=['GET', 'POST'])
 def memcache_config():
     capacity = request.form['capacity']
     policy = request.form['policy']
-    print(capacity,policy)
+
+
+
+    flash("Memcache configured - Capacity: %s MB, Policy: %s " % (capacity, policy))
 
     return redirect(url_for('mycloud_config'))
+
+# SQL query handler
+def execute_query(query):
+    cnx = mysql.connector.connect(**app.config['MYSQL_CONFIG'])
+    cursor = cnx.cursor()
+    cursor.execute(query)
+    cnx.close()
+    if app.debug == True:
+        print("SQL Query executed")
+
+# Display an HTML list of all product.
+@app.route('/trivial',methods=['GET'])
+def trivial():
+    query = "SELECT * FROM customer "
+    execute_query(query)
+    return 'some json data'
+#     return view 
