@@ -8,8 +8,14 @@
     </style>
 
     <body>
-        <p>Items found:</b></p>
+        
+        {%if binary_flag == 0%}
+        <p>Items found in the local storage:</b></p>
         <img src="{{ file_path }}" class="image" /></img>
+        {%else%}
+        <p>Items found in the memcache:</b></p>
+        <img src="data:image/gif;base64,{{ file_path }}" class="image" /></img>
+        {%endif%}
         <ul>Image key = {{key}}</ul>
 
     </body>  

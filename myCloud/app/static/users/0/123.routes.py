@@ -3,16 +3,14 @@ from flask import render_template, url_for, request, redirect, flash, session
 from markupsafe import escape
 from app import app
 from app.user import User, total_users
-from app.__init__ import memcache
 from werkzeug.utils import secure_filename
-import base64
 
 import mysql.connector
 
 # Some constant variables
 USERS_FOLDER = './app/static/users'
 DISPLAY_FOLDER = './static/users'
-ALLOWED_EXTENSIONS = {'docx', 'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
+ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
 app.config['USERS_FOLDER'] = USERS_FOLDER
 app.config['DISPLAY_FOLDER'] = DISPLAY_FOLDER
 
@@ -145,31 +143,11 @@ def logout():
         flash("You are logged out")
     return redirect(url_for('index'))
 
-# Allowed extension validation
+# myContent page
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-# Key file validation and store
-def key_file_store(key, request):
-    if 'image' not in request.files:
-        flash('Please select a file')
-    file = request.files['image']
-    
-    if file.filename == '':
-        flash('No selected file')
-    elif not allowed_file(file.filename):
-        flash('Allowed file type are %s' % ALLOWED_EXTENSIONS)
-    elif file:
-        filename = secure_filename(file.filename)
-        filename = key + '.' + filename
-        file_binary = base64.b64encode(file.read())
-        file_binary = file_binary.decode('utf-8') # remove b''
-        file.save(os.path.join(app.config['USERS_FOLDER'], str(total_users[session['email']].id) ,filename))
-        
-        flash('File upload succeeded')
-        return file_binary
-    return None
-        
+
 @app.route('/mycontent', methods=['GET', 'POST'])
 def mycontent():
     # Check if login
@@ -178,6 +156,20 @@ def mycontent():
     else:
         flash("Please login first")
         return redirect(url_for('login'))
+
+# def key_file_validate(key, request):
+#     if 'image' not in request.files:
+#         flash('Please select a file')
+#         return redirect(request.url)
+#     file = request.files['image']
+#     if file.filename == '':
+#         flash('No selected file')
+#     if file and allowed_file(file.filename):
+#         filename = secure_filename(file.filename)
+#         filename = key + '.' + filename
+#         file.save(os.path.join(app.config['USERS_FOLDER'], str(total_users[session['email']].id) ,filename))
+#         flash('File upload succeeded')
+#     return redirect(url_for('mycontent'))   
 
 @app.route('/upload', methods=['GET', 'POST'])
 def upload():
@@ -195,11 +187,19 @@ def upload():
                 print("user id is: " + str(total_users[session['email']].id))
                 print("user email is: " + session['email'])
 
-            # Check if file is valid and store it
-            file_binary = key_file_store(key, request)
-            
-            # Update memcache
-            memcache.update({key: file_binary})
+            # Check if file is valid
+            if 'image' not in request.files:
+                flash('Please select a file')
+            file = request.files['image']
+            if file.filename == '':
+                flash('No selected file')
+            if not allowed_file(file.filename):
+                flash('Allowed file type are %s' % ALLOWED_EXTENSIONS)
+            if file:
+                filename = secure_filename(file.filename)
+                filename = key + '.' + filename
+                file.save(os.path.join(app.config['USERS_FOLDER'], str(total_users[session['email']].id) ,filename))
+                flash('File upload succeeded')
 
         return redirect(url_for('mycontent'))     
     
@@ -210,21 +210,11 @@ def upload():
     
 @app.route('/retrieve', methods=['GET', 'POST'])
 def retrieve():
-    binary_flag = 0
     # Check if login
     if 'email' in session:
         # Retrieve
         key =  request.form['retrieve']
         current_user = total_users[session['email']]
-
-        # Try memcache
-        if key in memcache:
-            binary_flag = 1
-            file_binary = base64.b64encode(memcache[key])
-            file_binary = file_binary.decode('utf-8') # remove b''
-            return render_template('display.html', file_path=file_binary, key=key, binary_flag=binary_flag)
-
-        # Else go to local storage
         for root, dirs, files in os.walk(os.path.join(app.config['USERS_FOLDER'], str(current_user.id))):
             for file in files:
                 if key == file.split('.')[0]:
@@ -232,7 +222,7 @@ def retrieve():
                     if app.debug == True:
                         print('User input retrieve key %s' % key)
                         print('User File Path: ' + file_path)
-                    return render_template('display.html', file_path=file_path, key=key, binary_flag=binary_flag)
+                    return render_template('display.html', file_path=file_path, key=key)
 
         flash('No file associated with the key was found')
         return redirect(url_for('mycontent'))
