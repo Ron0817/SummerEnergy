@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}    
+    <body>
+        <p>Keys in the memcache:</b></p>
+        <p>
+        {% for key in keys %}
+            {{key}}, 
+        {% endfor %}
+        </p>
+        <hr>
+
+        <p>Configure memcache:</p>
+        <form method="post" action="memcache-config">
+            <label>Capacity in MB (10 - 100): </label>
+            <input type="number" name="capacity" min="10" max="100" value="10"/>
+            <label>Replacement Policy: </label>
+            <select type="select" name="policy">
+                <option value="Random">Random</option>
+                <option value="RR">Round Robin</option>
+            </select>
+            <input type="submit" value="submit" />
+        </form>
+
+        <hr>
+        {% for mesg in get_flashed_messages() %}
+            <p>{{ mesg }}, </p>
+        {% endfor %}
+
+    </body>  
+
+  {% endblock %}

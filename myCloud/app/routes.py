@@ -239,3 +239,20 @@ def retrieve():
     else:
         flash("Please login first")
         return redirect(url_for('login')) 
+
+@app.route('/mycloud-config', methods=['GET', 'POST'])
+def mycloud_config():
+    # Check if login
+    if 'email' in session:
+        return render_template('mycloud-performance.html',keys=list(memcache.keys()))
+    else:
+        flash('Please login first')
+        return redirect(url_for('login'))
+
+@app.route('/memcache-config', methods=['GET', 'POST'])
+def memcache_config():
+    capacity = request.form['capacity']
+    policy = request.form['policy']
+    print(capacity,policy)
+
+    return redirect(url_for('mycloud_config'))
