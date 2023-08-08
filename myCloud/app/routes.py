@@ -199,7 +199,7 @@ def upload():
             file_binary = key_file_store(key, request)
             
             # Update memcache
-            memcache.update({key: file_binary})
+            memcache.put(key, file_binary)
 
         return redirect(url_for('mycontent'))     
     
@@ -218,15 +218,16 @@ def retrieve():
         current_user = total_users[session['email']]
 
         # Try memcache
-        if key in memcache:
+        if key in memcache.itself():
             binary_flag = 1
-            return render_template('display.html', file_path=memcache[key], key=key, binary_flag=binary_flag)
+            return render_template('display.html', file_path=memcache.get(key), key=key, binary_flag=binary_flag)
 
         # Else go to local storage
         for root, dirs, files in os.walk(os.path.join(app.config['USERS_FOLDER'], str(current_user.id))):
             for file in files:
                 if key == file.split('.')[0]:
                     file_path = os.path.join(app.config['DISPLAY_FOLDER'], str(current_user.id), file)
+                    
                     if app.debug == True:
                         print('User input retrieve key %s' % key)
                         print('User File Path: ' + file_path)
