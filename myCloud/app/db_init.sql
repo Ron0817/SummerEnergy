@@ -27,6 +27,21 @@ CREATE TABLE IF NOT EXISTS `memcache`.`config` (
   PRIMARY KEY (`id`))
 ENGINE = InnoDB;
 
+-- -----------------------------------------------------
+-- Table `memcache`.`config`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `memcache`.`statistics` ;
+
+CREATE TABLE IF NOT EXISTS `memcache`.`statistics` (
+  `id` INT NOT NULL,
+  `Date and time` varchar(45) NOT NULL,
+  `miss_rate` DECIMAL(5,2),
+  `hit_rate` DECIMAL(5,2),
+  `num_of_items` INT,
+  `size` DECIMAL(5,2),
+  `num_of_serves` INT,
+  PRIMARY KEY (`id`))
+ENGINE = InnoDB;
 
 
 

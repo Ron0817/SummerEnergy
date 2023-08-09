@@ -1,3 +1,6 @@
+import mysql.connector
+from app.config import mysql_config
+
 class Memcache:
     def __init__(self, capacity, replacement_policy):
         self.cache = {}
@@ -32,6 +35,20 @@ class Memcache:
     def invalidate_key(self, key):
         self.cache.pop(key)
     
-    def refresh_configuration():
-        return
+    def refresh_configuration(self):
+        # Read from rd
+        query = "SELECT * FROM config WHERE id=1"
+        cnx = mysql.connector.connect(**mysql_config)
+        cursor = cnx.cursor()
+        cursor.execute(query)
+        for row in cursor:
+            # Only base on the first row
+            if int(row[0]) == 1:
+                policy = str(row[1])
+                capacity = float(row[2])
+        cnx.close()    
+        # Update memcache params
+        self.replacement_policy = policy
+        self.capacity = capacity
+        return 0
     

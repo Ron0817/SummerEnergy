@@ -4,24 +4,12 @@ from markupsafe import escape
 from app import app
 from app.user import User, total_users
 from app.__init__ import memcache
+from app.config import *
 from werkzeug.utils import secure_filename
 import base64
 
 import mysql.connector
 
-# Some constant configs
-USERS_FOLDER = './app/static/users'
-DISPLAY_FOLDER = './static/users'
-ALLOWED_EXTENSIONS = {'docx', 'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
-
-# Mysql config
-mysql_config = {
-  'user': 'ece1779',
-  'password': '12345678',
-  'host': '127.0.0.1',
-  'database': 'estore',
-  'raise_on_warnings': True
-}
 
 app.config['MYSQL_CONFIG'] = mysql_config
 app.config['USERS_FOLDER'] = USERS_FOLDER
@@ -251,17 +239,29 @@ def memcache_config():
     capacity = request.form['capacity']
     policy = request.form['policy']
 
+    # Insert query
+    query = '''INSERT INTO `memcache`.`config` (`id`, `policy`, `capacity`) VALUES (1, %s, %s)
+        ON DUPLICATE KEY UPDATE `policy` = %s, `capacity` = %s'''
+    cnx = mysql.connector.connect(**app.config['MYSQL_CONFIG'])
+    cursor = cnx.cursor()
+    cursor.execute(query, (policy, capacity, policy, capacity))
+    cnx.commit()
+    cnx.close()    
 
-
+    # Memcache reconfiged
+    memcache.refresh_configuration()
     flash("Memcache configured - Capacity: %s MB, Policy: %s " % (capacity, policy))
 
+    if app.debug == True:
+        print("Memcache reconfigured - new policy: %s, new capacity: %s" % (memcache.replacement_policy, memcache.capacity))
     return redirect(url_for('mycloud_config'))
 
 # SQL query handler
-def execute_query(query):
+def insert_query_handler(queries, params):
     cnx = mysql.connector.connect(**app.config['MYSQL_CONFIG'])
     cursor = cnx.cursor()
-    cursor.execute(query)
+    for query in queries:
+        cursor.execute(query)
     cnx.close()
     if app.debug == True:
         print("SQL Query executed")
@@ -269,7 +269,6 @@ def execute_query(query):
 # Display an HTML list of all product.
 @app.route('/trivial',methods=['GET'])
 def trivial():
-    query = "SELECT * FROM customer "
-    execute_query(query)
+    queries = ["SELECT * FROM config "]
     return 'some json data'
 #     return view 
