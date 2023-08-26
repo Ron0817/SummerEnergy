@@ -36,7 +36,7 @@ class Memcache:
         self.cache.pop(key)
     
     def refresh_configuration(self):
-        # Read from rd
+        # Read from memcache.config.firstline
         query = "SELECT * FROM config WHERE id=1"
         cnx = mysql.connector.connect(**mysql_config)
         cursor = cnx.cursor()

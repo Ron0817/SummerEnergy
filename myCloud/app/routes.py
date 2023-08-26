@@ -257,18 +257,35 @@ def memcache_config():
     return redirect(url_for('mycloud_config'))
 
 # SQL query handler
-def insert_query_handler(queries, params):
+# def insert_query_handler(queries, params):
+#     cnx = mysql.connector.connect(**app.config['MYSQL_CONFIG'])
+#     cursor = cnx.cursor()
+#     for query in queries:
+#         cursor.execute(query)
+#     cnx.close()
+#     if app.debug == True:
+#         print("SQL Query executed")
+
+# Memcache Configuration
+@app.route('/memcache-statistics', methods=['GET', 'POST'])
+def memcache_statistics():
+    return "reached here"
+    capacity = request.form['capacity']
+    policy = request.form['policy']
+
+    # Insert query
+    query = '''INSERT INTO `memcache`.`config` (`id`, `policy`, `capacity`) VALUES (1, %s, %s)
+        ON DUPLICATE KEY UPDATE `policy` = %s, `capacity` = %s'''
     cnx = mysql.connector.connect(**app.config['MYSQL_CONFIG'])
     cursor = cnx.cursor()
-    for query in queries:
-        cursor.execute(query)
-    cnx.close()
-    if app.debug == True:
-        print("SQL Query executed")
+    cursor.execute(query, (policy, capacity, policy, capacity))
+    cnx.commit()
+    cnx.close()    
 
-# Display an HTML list of all product.
-@app.route('/trivial',methods=['GET'])
-def trivial():
-    queries = ["SELECT * FROM config "]
-    return 'some json data'
-#     return view 
+    # Memcache reconfiged
+    memcache.refresh_configuration()
+    flash("Memcache configured - Capacity: %s MB, Policy: %s " % (capacity, policy))
+
+    if app.debug == True:
+        print("Memcache reconfigured - new policy: %s, new capacity: %s" % (memcache.replacement_policy, memcache.capacity))
+    return redirect(url_for('mycloud_config'))
