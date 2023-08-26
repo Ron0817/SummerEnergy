@@ -10,6 +10,8 @@ import base64
 
 import mysql.connector
 #thread test
+import threading
+import time
 
 
 app.config['MYSQL_CONFIG'] = mysql_config
@@ -290,3 +292,15 @@ def memcache_statistics():
     if app.debug == True:
         print("Memcache reconfigured - new policy: %s, new capacity: %s" % (memcache.replacement_policy, memcache.capacity))
     return redirect(url_for('mycloud_config'))
+
+# Threads 1 monitor statistics and store into db every 5 secs
+STOP = 0
+def memcache_monitor():
+    duration = 5
+    while not STOP:
+        print("memcache key num = %s" % len(memcache.keys()))
+        time.sleep(duration)
+
+
+x = threading.Thread(target=memcache_monitor)
+x.start()
