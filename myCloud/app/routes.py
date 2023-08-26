@@ -9,6 +9,7 @@ from werkzeug.utils import secure_filename
 import base64
 
 import mysql.connector
+#thread test
 
 
 app.config['MYSQL_CONFIG'] = mysql_config
