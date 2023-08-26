@@ -28,19 +28,19 @@ CREATE TABLE IF NOT EXISTS `memcache`.`config` (
 ENGINE = InnoDB;
 
 -- -----------------------------------------------------
--- Table `memcache`.`config`
+-- Table `memcache`.`statistics`
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `memcache`.`statistics` ;
 
 CREATE TABLE IF NOT EXISTS `memcache`.`statistics` (
   `id` INT NOT NULL,
-  `Date and time` varchar(45) NOT NULL,
+  `time_stamp` varchar(45),
   `miss_rate` DECIMAL(5,2),
   `hit_rate` DECIMAL(5,2),
   `num_of_items` INT,
   `size` DECIMAL(5,2),
   `num_of_serves` INT,
-  PRIMARY KEY (`id`))
+  PRIMARY KEY (`time_stamp`))
 ENGINE = InnoDB;
 
 
@@ -58,7 +58,14 @@ INSERT INTO `memcache`.`config` (`id`, `policy`, `capacity`) VALUES (1, 'Random'
 
 COMMIT;
 
+-- -----------------------------------------------------
+-- Data for table `memcache`.`statistics`
+-- -----------------------------------------------------
+START TRANSACTION;
+USE `memcache`;
+INSERT INTO `memcache`.`statistics` (`id`, `time_stamp`, `miss_rate`, `hit_rate`, `num_of_items`, `size`, `num_of_serves`) VALUES (1, '2023-08-26', 0, 0, 0, 0, 0);
 
+COMMIT;
 
 
 DROP USER IF EXISTS 'ece1779'@'localhost';
