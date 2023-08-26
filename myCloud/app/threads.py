@@ -44,8 +44,8 @@ def memcache_monitor():
         cnx.close()    
         time.sleep(duration)
 
-        if app.debug == True:
-            print("FROM thread id = %s Store Time Stamp %s" % (threading.get_native_id(), time_stamp))
+        # if app.debug == True:
+        #     print("FROM thread id = %s Store Time Stamp %s" % (threading.get_native_id(), time_stamp))
             
 
 

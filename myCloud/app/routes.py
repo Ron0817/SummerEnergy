@@ -1,5 +1,5 @@
 import os
-from flask import render_template, url_for, request, redirect, flash, session
+from flask import render_template, url_for, request, redirect, flash, session, jsonify
 from markupsafe import escape
 from app import app
 from app.user import User, total_users
@@ -271,24 +271,16 @@ def memcache_config():
 # Memcache Configuration
 @app.route('/memcache-statistics', methods=['GET', 'POST'])
 def memcache_statistics():
-    return "reached here"
-    capacity = request.form['capacity']
-    policy = request.form['policy']
-
-    # Insert query
-    query = '''INSERT INTO `memcache`.`config` (`id`, `policy`, `capacity`) VALUES (1, %s, %s)
-        ON DUPLICATE KEY UPDATE `policy` = %s, `capacity` = %s'''
+    # Read from db
+    query = '''SELECT * FROM `memcache`.`statistics`'''
     cnx = mysql.connector.connect(**app.config['MYSQL_CONFIG'])
     cursor = cnx.cursor()
-    cursor.execute(query, (policy, capacity, policy, capacity))
-    cnx.commit()
+    cursor.execute(query)
+    content = cursor.fetchall()
     cnx.close()    
 
-    # Memcache reconfiged
-    memcache.refresh_configuration()
-    flash("Memcache configured - Capacity: %s MB, Policy: %s " % (capacity, policy))
-
-    if app.debug == True:
-        print("Memcache reconfigured - new policy: %s, new capacity: %s" % (memcache.replacement_policy, memcache.capacity))
-    return redirect(url_for('mycloud_config'))
+    for row in content:
+        print(row)
+    return jsonify(content)
+    return content
 
