@@ -6,7 +6,7 @@ from app.config import mysql_config
 class Memcache:
     def __init__(self, capacity, replacement_policy):
         self.cache = {}
-        # policy {0:Random, 1:RR}
+        # policy {Random, RR}
         self.replacement_policy = replacement_policy
         self.capacity = capacity
         self.num_of_serve = 0
@@ -29,9 +29,14 @@ class Memcache:
         return sys.getsizeof(self.cache)
     
     def put(self, key, value):
+        print("MEMCACHE size now is %s NEW IMAGE size now is %s CAPACITY is %s" % (sys.getsizeof(self.cache), sys.getsizeof(value), self.capacity * 1024))
         # If new size > maximum capacity of cache; then call replace_policy 
-        if sys.getsizeof(self.cache) + sys.getsizeof({key: value}) > self.capacity * 1024:
-            replaced_idx = self.replace_by_policy(value)
+        if sys.getsizeof(self.cache) > self.capacity * 9999:    # No use temporarily
+            if len(self.cache.keys()) >= 1:
+                replaced_idx = self.replace_by_policy(key, value)
+            else:
+                self.cache.update({key: value})    
+                replaced_idx = 0
         else:    
             self.cache.update({key: value})
             replaced_idx = 0
@@ -64,20 +69,21 @@ class Memcache:
         self.capacity = capacity
         return 0
     
-    def replace_by_policy(self, value):
+    def replace_by_policy(self, key,value):
         # Only being supported in Python 3.10 +
         match self.replacement_policy:
-            case 0:
-                random_idx = random.sample(self.cache.keys(), 1)
-                self.cache.update({random_idx: value})
+            case "Random":
+                random_idx = random.sample(self.cache.keys(), 1)[0]
+                self.cache.pop(random_idx)
+                self.cache.update({key: value})
                 return random_idx
             
-            case 1:
+            case "RR":
                 print("placeholder for RR policy")
                 return 0
 
             case _:
-                random_idx = random.sample(self.cache.keys(), 1)
+                random_idx = random.sample(self.cache.keys(), 1)[0]
                 self.cache.update({random_idx: value})
                 return random_idx
 
