@@ -230,7 +230,7 @@ def retrieve():
 def mycloud_config():
     # Check if login
     if 'email' in session:
-        return render_template('mycloud-performance.html',keys=list(memcache.keys()))
+        return render_template('mycloud-config.html',keys=list(memcache.keys()))
     else:
         flash('Please login first')
         return redirect(url_for('login'))
@@ -272,15 +272,12 @@ def memcache_config():
 @app.route('/memcache-statistics', methods=['GET', 'POST'])
 def memcache_statistics():
     # Read from db
-    query = '''SELECT * FROM `memcache`.`statistics`'''
+    query = '''SELECT * FROM `memcache`.`statistics` ORDER BY `time_stamp` DESC LIMIT 25'''
     cnx = mysql.connector.connect(**app.config['MYSQL_CONFIG'])
     cursor = cnx.cursor()
     cursor.execute(query)
     content = cursor.fetchall()
     cnx.close()    
-
-    for row in content:
-        print(row)
-    return jsonify(content)
-    return content
+    return render_template('memcache-statistics.html',content=content)
+    # return jsonify(content)
 

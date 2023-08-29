@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block content %}    
+    <style>
+    table, th, td {
+      border:1px solid black;
+      border-collapse: collapse;
+    }
+    tr:nth-child(even) {
+        background-color: #D6EEEE;
+    }
+    </style>
+
+    <body>
+        <p>Memcache Statistics</b></p>
+        <!-- <p>
+        {% for row in content %}
+            <p>{{row}}</p> 
+        {% endfor %}
+        </p> -->
+
+        <table>
+            <tr>
+                <th>Cache Id</th></t>
+                <th>Time Stamp</th>
+                <th>Miss Rate</th>
+                <th>Hit Rate</th>
+                <th>Items in Cache</th>
+                <th>Cache Size</th>
+                <th>Num of Services</th>
+            </tr>
+            {% for row in content %}
+                <tr>
+                {% for data in row %}
+                    <td>{{data}}</td>
+                {% endfor %}
+                </tr>
+            {% endfor %}
+
+        </table>
+
+
+
+        <hr>
+
+        {% for mesg in get_flashed_messages() %}
+            <p>{{ mesg }} </p>
+        {% endfor %}
+
+    </body>  
+
+  {% endblock %}
