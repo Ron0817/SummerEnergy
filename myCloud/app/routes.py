@@ -279,5 +279,4 @@ def memcache_statistics():
     content = cursor.fetchall()
     cnx.close()    
     return render_template('memcache-statistics.html',content=content)
-    # return jsonify(content)
 
