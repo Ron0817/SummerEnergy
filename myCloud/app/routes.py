@@ -130,7 +130,7 @@ def key_file_store(key, request):
     if 'image' not in request.files:
         flash('Please select a file')
     file = request.files['image']
-    
+
     if file.filename == '':
         flash('No selected file')
     elif not allowed_file(file.filename):
@@ -138,11 +138,14 @@ def key_file_store(key, request):
     elif file:
         filename = secure_filename(file.filename)
         filename = key + '.' + filename
-        file_binary = base64.b64encode(file.read())
-        file_binary = file_binary.decode('utf-8') # remove b''
         file.save(os.path.join(app.config['USERS_FOLDER'], str(total_users[session['email']].id) ,filename))
         
-        flash('File upload succeeded')
+        # Read the file again
+        request.files['image'].seek(0)
+        file_binary = base64.b64encode(file.read())
+        file_binary = file_binary.decode('utf-8') # remove b''
+        
+        flash('File uploaded successfully')
         return file_binary
     return None
         
@@ -180,11 +183,12 @@ def upload():
                 print("user id is: " + str(total_users[session['email']].id))
                 print("user email is: " + session['email'])
 
-            # Check if file is valid and store it
+            # Check if file is valid and store it in the cache
             file_binary = key_file_store(key, request)
             
             # Update memcache
             memcache.put(key, file_binary)
+            
 
         return redirect(url_for('mycontent'))     
     

@@ -1,9 +1,12 @@
 import mysql.connector
+import random
+import sys
 from app.config import mysql_config
 
 class Memcache:
     def __init__(self, capacity, replacement_policy):
         self.cache = {}
+        # policy {0:Random, 1:RR}
         self.replacement_policy = replacement_policy
         self.capacity = capacity
         self.num_of_serve = 0
@@ -22,8 +25,17 @@ class Memcache:
     def itself(self):
         return self.cache
     
+    def getsize(self):
+        return sys.getsizeof(self.cache)
+    
     def put(self, key, value):
-        self.cache.update({key: value})
+        # If new size > maximum capacity of cache; then call replace_policy 
+        if sys.getsizeof(self.cache) + sys.getsizeof({key: value}) > self.capacity * 1024:
+            replaced_idx = self.replace_by_policy(value)
+        else:    
+            self.cache.update({key: value})
+            replaced_idx = 0
+        return replaced_idx
 
     def get(self, key):    
         value = self.cache.get(key)
@@ -51,4 +63,23 @@ class Memcache:
         self.replacement_policy = policy
         self.capacity = capacity
         return 0
+    
+    def replace_by_policy(self, value):
+        # Only being supported in Python 3.10 +
+        match self.replacement_policy:
+            case 0:
+                random_idx = random.sample(self.cache.keys(), 1)
+                self.cache.update({random_idx: value})
+                return random_idx
+            
+            case 1:
+                print("placeholder for RR policy")
+                return 0
+
+            case _:
+                random_idx = random.sample(self.cache.keys(), 1)
+                self.cache.update({random_idx: value})
+                return random_idx
+
+
     
