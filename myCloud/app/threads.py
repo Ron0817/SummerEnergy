@@ -30,7 +30,9 @@ def memcache_monitor():
         miss_rate = 0
         hit_rate = 0
         num_of_item = len(memcache.keys())
-        size = memcache.getsize()
+        
+        size = round(memcache.getsizeof_actual_data() / (1024 * 1024), 2)  # in MB
+        print("SIZE now is {}".format(size))
         num_of_requests = 0
         
         # Insert query

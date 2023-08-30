@@ -28,6 +28,9 @@ class Memcache:
     def getsize(self):
         return sys.getsizeof(self.cache)
     
+    def getsizeof_actual_data(self):
+        return sum([sys.getsizeof(i) for i in list(self.cache.values())])
+    
     def put(self, key, value):        
         # Loop thru elements in dict.values() and getsizeof() it, and sum them up
         cache_value_actual_size = sum([sys.getsizeof(i) for i in list(self.cache.values())])
