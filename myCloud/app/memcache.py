@@ -28,10 +28,14 @@ class Memcache:
     def getsize(self):
         return sys.getsizeof(self.cache)
     
-    def put(self, key, value):
-        print("MEMCACHE size now is %s NEW IMAGE size now is %s CAPACITY is %s" % (sys.getsizeof(self.cache), sys.getsizeof(value), self.capacity * 1024))
+    def put(self, key, value):        
+        # Loop thru elements in dict.values() and getsizeof() it, and sum them up
+        cache_value_actual_size = sum([sys.getsizeof(i) for i in list(self.cache.values())])
+        print("MEMCACHE size now is %s NEW IMAGE size now is %s CAPACITY is %s Bytes" % 
+                (cache_value_actual_size, sys.getsizeof(value), self.capacity * 1024 * 1024))
+        
         # If new size > maximum capacity of cache; then call replace_policy 
-        if sys.getsizeof(self.cache) > self.capacity * 9999:    # No use temporarily
+        if cache_value_actual_size + sys.getsizeof(value) > self.capacity * 1024 * 1024:    # No use temporarily
             if len(self.cache.keys()) >= 1:
                 replaced_idx = self.replace_by_policy(key, value)
             else:
@@ -40,6 +44,7 @@ class Memcache:
         else:    
             self.cache.update({key: value})
             replaced_idx = 0
+        
         return replaced_idx
 
     def get(self, key):    
