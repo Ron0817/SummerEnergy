@@ -10,3 +10,9 @@ Memcache
 
 Database
     memcache.statistics memcache.config
+
+Run:
+    $ source venv/bin/activate
+    $ mysql -u root -p
+    mysql> source app/db_init.sql
+    $ flask run 
